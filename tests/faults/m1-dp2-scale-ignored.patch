@@ -1,0 +1,20 @@
+--- a/src/core/output.cpp
++++ b/src/core/output.cpp
+@@ -29,12 +29,15 @@
+ 
+ QPointF Output::layoutToDevice(QPointF layout) const
+ {
+-    return (layout - QPointF(layoutPos)) * scale;
++    // Planted fault: DP-2's scale is ignored in the mapping.
++    const double s = (name == QLatin1String("DP-2")) ? 1.0 : scale;
++    return (layout - QPointF(layoutPos)) * s;
+ }
+ 
+ QPointF Output::deviceToLayout(QPointF device) const
+ {
+-    return device / scale + QPointF(layoutPos);
++    const double s = (name == QLatin1String("DP-2")) ? 1.0 : scale;
++    return device / s + QPointF(layoutPos);
+ }
+ 
+ QRect Output::layoutToDeviceRect(const QRectF &layout) const
