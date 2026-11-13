@@ -1,0 +1,11 @@
+--- a/data/riley-shot.desktop
++++ b/data/riley-shot.desktop
+@@ -5,7 +5,7 @@
+ GenericName=Screenshot
+ Comment=Capture a region, a screen or a window, then draw on it
+ Keywords=screenshot;capture;snip;print;
+-Exec=riley-shot
++Exec=rileyshot
+ Icon=riley-shot
+ Terminal=false
+ StartupNotify=false

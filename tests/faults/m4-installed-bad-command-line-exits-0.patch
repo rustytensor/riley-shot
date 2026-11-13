@@ -1,0 +1,11 @@
+--- a/src/app/main.cpp
++++ b/src/app/main.cpp
+@@ -101,7 +101,7 @@
+     case CliOptions::Command::Error:
+         say(o.error);
+         std::fputs(kUsage, stderr);
+-        return 2;
++        return 0;
+     case CliOptions::Command::Help:
+         std::fputs(kUsage, stdout);
+         return 0;
