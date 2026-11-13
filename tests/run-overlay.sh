@@ -247,6 +247,18 @@ for mon, v in d.items():
 '
 }
 
+# The live part holds the shared DP-2 lock (the same flock file and holder line as dp2-lock, which cannot wrap a
+# block of this script), taken here and released right after the live part; the build above never holds it.
+DP2_LOCK="/run/user/$(id -u)/dp2-test.lock"
+if [ $live_ok -eq 1 ]; then
+    exec 9> "$DP2_LOCK"
+    if ! flock -n 9; then
+        echo "     (waiting for the DP-2 lock: $(cat "$DP2_LOCK.holder" 2>/dev/null || echo 'another test'))"
+        flock 9
+    fi
+    printf '%s  pid %s  %s\n' "$(date '+%F %T')" "$$" "riley-shot tests/run-overlay.sh (live part)" > "$DP2_LOCK.holder"
+fi
+
 if [ $live_ok -eq 1 ]; then
     # a. An output that does not exist: exit 4, no surface.
     start_rileyshot nope --outputs NOPE-9 --exit-after-ms 3000 --report "$SHOTS/report-nope.jsonl" --no-editor
@@ -431,6 +443,8 @@ EOF
     else
         fail "live: something was captured during the live checks"
     fi
+    : > "$DP2_LOCK.holder"
+    exec 9>&-
 fi
 
 # ---------------------------------------------------------------------------------------------------------------
