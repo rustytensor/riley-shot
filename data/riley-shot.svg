@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="#1d2430"/>
+  <path d="M16 26 V16 H26 M38 16 H48 V26 M48 38 V48 H38 M26 48 H16 V38" fill="none" stroke="#e9a046"
+        stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="32" cy="32" r="7" fill="#f0ece0"/>
+</svg>

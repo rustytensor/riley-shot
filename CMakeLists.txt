@@ -90,7 +90,11 @@ target_link_libraries(rileyshot_ui PUBLIC rileyshot_core Qt6::Gui Qt6::Qml Qt6::
 qt_add_executable(riley-shot src/app/main.cpp)
 target_link_libraries(riley-shot PRIVATE rileyshot_core rileyshot_ui rileyshot_uiplugin Qt6::Gui Qt6::Qml Qt6::Quick
     LayerShellQt::Interface)
+# Installed with `cmake --install BUILD --prefix ~/.local`: the program (self-contained: the QML and the schema are
+# inside it), its launcher entry and its icon. tests/run-install.sh (M4) checks exactly these three files.
 install(TARGETS riley-shot RUNTIME DESTINATION bin)
+install(FILES data/riley-shot.desktop DESTINATION share/applications)
+install(FILES data/riley-shot.svg DESTINATION share/icons/hicolor/scalable/apps)
 
 # ---------------------------------------------------------------------------------------------------------------
 # Tests (the gate writer's). Each is a Qt Test program the gate runs by name.

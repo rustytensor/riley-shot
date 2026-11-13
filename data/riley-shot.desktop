@@ -1,0 +1,26 @@
+[Desktop Entry]
+Type=Application
+Version=1.5
+Name=Riley Shot
+GenericName=Screenshot
+Comment=Capture a region, a screen or a window, then draw on it
+Keywords=screenshot;capture;snip;print;
+Exec=riley-shot
+Icon=riley-shot
+Terminal=false
+StartupNotify=false
+StartupWMClass=riley-shot
+Categories=Utility;
+Actions=region;screen;window;
+
+[Desktop Action region]
+Name=Capture a region
+Exec=riley-shot --region
+
+[Desktop Action screen]
+Name=Capture a screen
+Exec=riley-shot --screen
+
+[Desktop Action window]
+Name=Capture a window
+Exec=riley-shot --window
