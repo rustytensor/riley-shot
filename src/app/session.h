@@ -16,7 +16,13 @@
 //      controller.
 //   5. CaptureController::finished(result) closes every surface and ends the program with exit code `result`:
 //      0 captured and delivered, 1 cancelled (Escape or the close button), 3 the --exit-after-ms timer ran out,
-//      4 failure. Until the editor exists (M3) a capture without --no-editor delivers exactly as with it.
+//      4 failure.
+//   6. (M3) Without --no-editor, a capture that finished with 0 then opens the editor on controller.result()
+//      (editorwindow.h runEditor, with the same Config, Theme and copy command, home QDir::homePath()), after every
+//      overlay surface has closed; delivery (copy and save per the config) has already happened in capture().
+//      --exit-after-ms also limits the editor: a fresh timer of the same length starts when it opens, and runs out
+//      with exit code 3. Otherwise the exit code is runEditor's (0 when its window is closed). The report gets the
+//      editor's line ({"event":"editor",...}) before the single exit line.
 //
 // Test aids (CliOptions):
 //   --outputs A,B      only those outputs are grabbed and covered.
@@ -35,7 +41,7 @@
 //     {"event":"exit","code":N}
 //         once, just before the program exits.
 //
-// Owner: builder A (session.cpp, overlaysurface.h/.cpp, main.cpp).
+// Owner: M2 builder A (overlaysurface.h/.cpp); from M3 builder B (session.cpp, main.cpp).
 #pragma once
 
 #include "cli.h"

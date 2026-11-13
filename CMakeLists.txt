@@ -65,12 +65,25 @@ qt_add_qml_module(rileyshot_ui
         src/app/capturecontroller.h src/app/capturecontroller.cpp
         src/app/overlaysurface.h    src/app/overlaysurface.cpp
         src/app/session.h           src/app/session.cpp
+        # M3, the editor. Builder A: the document model, renderer, undo, save and copy (src/editor). Builder B: the
+        # window, the canvas item and the QML (src/app/editorwindow.*, src/app/documentcanvas.*, src/qml/Editor*.qml,
+        # ColourPicker.qml, TextEntry.qml), and the wiring in session.cpp, main.cpp and cli.cpp. The headers are the
+        # M3 contract (tests/run-editor.sh). A builder adds a helper file only to the list of its own files.
+        src/editor/annotation.h
+        src/editor/document.h       src/editor/document.cpp
+        src/editor/render.h         src/editor/render.cpp
+        src/app/editorwindow.h      src/app/editorwindow.cpp
+        src/app/documentcanvas.h    src/app/documentcanvas.cpp
     QML_FILES
         src/qml/Overlay.qml
         src/qml/CaptureBar.qml
         src/qml/SelectionFrame.qml
-        src/qml/BarButton.qml)
-target_include_directories(rileyshot_ui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/app")
+        src/qml/BarButton.qml
+        src/qml/Editor.qml
+        src/qml/EditorToolbar.qml
+        src/qml/ColourPicker.qml
+        src/qml/TextEntry.qml)
+target_include_directories(rileyshot_ui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/app" "${CMAKE_CURRENT_SOURCE_DIR}/src/editor")
 target_link_libraries(rileyshot_ui PUBLIC rileyshot_core Qt6::Gui Qt6::Qml Qt6::Quick LayerShellQt::Interface)
 
 # The program.
@@ -106,6 +119,14 @@ target_link_libraries(tst_controller PRIVATE rileyshot_ui)
 rileyshot_test(tst_overlay_qml)
 target_link_libraries(tst_overlay_qml PRIVATE rileyshot_ui rileyshot_uiplugin Qt6::Quick)
 set_tests_properties(tst_overlay_qml PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software")
+
+# M3 (tests/run-editor.sh), offscreen.
+rileyshot_test(tst_document)
+target_link_libraries(tst_document PRIVATE rileyshot_ui)
+rileyshot_test(tst_editor_qml)
+target_link_libraries(tst_editor_qml PRIVATE rileyshot_ui rileyshot_uiplugin Qt6::Quick)
+set_tests_properties(tst_editor_qml PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software")
+rileyshot_test(tst_editor_cli)
 
 # The live part's helpers: the test window that draws a known pattern on DP-2, and its checker.
 add_executable(rileyshot-testpattern tests/live/pattern.cpp tests/live/pattern.h)
