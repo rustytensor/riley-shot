@@ -41,7 +41,9 @@ add_library(rileyshot_core STATIC
     src/core/config.h   src/core/config.cpp
     src/core/theme.h    src/core/theme.cpp
     src/core/deliver.h  src/core/deliver.cpp
-    src/core/cli.h      src/core/cli.cpp)
+    src/core/cli.h      src/core/cli.cpp
+    # M2: the overlay's logic without UI (builder A).
+    src/core/selection.h src/core/selection.cpp)
 target_include_directories(rileyshot_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/core")
 target_link_libraries(rileyshot_core PUBLIC Qt6::Core Qt6::Gui PRIVATE PkgConfig::LIBXML2)
 # The schema travels inside the binary as :/riley-shot/config.xsd, so an installed riley-shot needs no data files.
@@ -51,9 +53,30 @@ qt_add_resources(rileyshot_core "rileyshot_schema"
     FILES data/config.xsd)
 
 # ---------------------------------------------------------------------------------------------------------------
-# The program. QML (from M2 on) is compiled into it with qt_add_qml_module.
+# The capture overlay (M2): QML module RileyShot, compiled into a static library so the installed riley-shot needs no
+# QML files on disk. Builder A owns the C++ (capturecontroller, overlaysurface, session), builder B the QML.
+# Programs that load the QML link rileyshot_uiplugin and say Q_IMPORT_QML_PLUGIN(RileyShotPlugin).
+qt_add_library(rileyshot_ui STATIC)
+qt_add_qml_module(rileyshot_ui
+    URI RileyShot
+    VERSION 1.0
+    RESOURCE_PREFIX /qt/qml
+    SOURCES
+        src/app/capturecontroller.h src/app/capturecontroller.cpp
+        src/app/overlaysurface.h    src/app/overlaysurface.cpp
+        src/app/session.h           src/app/session.cpp
+    QML_FILES
+        src/qml/Overlay.qml
+        src/qml/CaptureBar.qml
+        src/qml/SelectionFrame.qml
+        src/qml/BarButton.qml)
+target_include_directories(rileyshot_ui PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/app")
+target_link_libraries(rileyshot_ui PUBLIC rileyshot_core Qt6::Gui Qt6::Qml Qt6::Quick LayerShellQt::Interface)
+
+# The program.
 qt_add_executable(riley-shot src/app/main.cpp)
-target_link_libraries(riley-shot PRIVATE rileyshot_core Qt6::Gui Qt6::Qml Qt6::Quick LayerShellQt::Interface)
+target_link_libraries(riley-shot PRIVATE rileyshot_core rileyshot_ui rileyshot_uiplugin Qt6::Gui Qt6::Qml Qt6::Quick
+    LayerShellQt::Interface)
 install(TARGETS riley-shot RUNTIME DESTINATION bin)
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -76,8 +99,19 @@ rileyshot_test(tst_theme)
 rileyshot_test(tst_deliver)
 rileyshot_test(tst_cli)
 
+# M2 (tests/run-overlay.sh).
+rileyshot_test(tst_selection)
+rileyshot_test(tst_controller)
+target_link_libraries(tst_controller PRIVATE rileyshot_ui)
+rileyshot_test(tst_overlay_qml)
+target_link_libraries(tst_overlay_qml PRIVATE rileyshot_ui rileyshot_uiplugin Qt6::Quick)
+set_tests_properties(tst_overlay_qml PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen;QT_QUICK_BACKEND=software")
+
 # The live part's helpers: the test window that draws a known pattern on DP-2, and its checker.
 add_executable(rileyshot-testpattern tests/live/pattern.cpp tests/live/pattern.h)
 target_link_libraries(rileyshot-testpattern PRIVATE Qt6::Gui LayerShellQt::Interface)
 add_executable(rileyshot-checkpattern tests/live/checkpattern.cpp tests/live/pattern.h)
 target_link_libraries(rileyshot-checkpattern PRIVATE Qt6::Gui)
+# M2: compares a grab of DP-2 under the overlay with the grab before it, outside the capture bar.
+add_executable(rileyshot-comparegrab tests/live/comparegrab.cpp)
+target_link_libraries(rileyshot-comparegrab PRIVATE Qt6::Gui)

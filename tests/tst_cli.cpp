@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// M1 gate: command-line parsing (builder B: cli.cpp). Expected values from the brief's usage line and cli.h's rules.
+// M1 and M2 gates: command-line parsing (cli.cpp: M1 builder B, M2 builder A). Expected values from the brief's
+// usage line and cli.h's rules.
 #include "cli.h"
 
 #include <QtTest>
@@ -76,6 +77,57 @@ private slots:
         QCOMPARE(o.output, QStringLiteral("HDMI-A-1"));
         QCOMPARE(o.outFile, QStringLiteral("/tmp/y.png"));
         QCOMPARE(o.pointer, true);
+    }
+
+    // M2: the capture test aids (cli.h). Expected values from cli.h's rules for --outputs, --exit-after-ms and
+    // --report.
+    void testAids()
+    {
+        CliOptions o = parseCli({"--outputs", "DP-2", "--exit-after-ms", "8000", "--report", "/run/r.jsonl"});
+        QCOMPARE(o.command, Command::Capture);
+        QCOMPARE(o.mode, Mode::Bar);
+        QCOMPARE(o.outputs, QStringList{"DP-2"});
+        QCOMPARE(o.exitAfterMs, 8000);
+        QCOMPARE(o.reportFile, QStringLiteral("/run/r.jsonl"));
+
+        o = parseCli({"capture", "--region", "--outputs", "DP-2,HDMI-A-2", "--no-editor"});
+        QCOMPARE(o.command, Command::Capture);
+        QCOMPARE(o.mode, Mode::Region);
+        QCOMPARE(o.editor, false);
+        QCOMPARE(o.outputs, (QStringList{"DP-2", "HDMI-A-2"}));
+        QCOMPARE(o.exitAfterMs, 0); // no timer unless asked
+        QCOMPARE(o.reportFile, QString());
+
+        // Above 10000 ms it becomes 10000: a test overlay never stays up longer than 10 s.
+        o = parseCli({"--exit-after-ms", "60000"});
+        QCOMPARE(o.command, Command::Capture);
+        QCOMPARE(o.exitAfterMs, 10000);
+        o = parseCli({"--exit-after-ms", "10000"});
+        QCOMPARE(o.exitAfterMs, 10000);
+        o = parseCli({"--exit-after-ms", "1"});
+        QCOMPARE(o.exitAfterMs, 1);
+
+        // Errors.
+        for (const QStringList &bad : QList<QStringList>{
+                 {"--exit-after-ms", "0"},
+                 {"--exit-after-ms", "-5"},
+                 {"--exit-after-ms", "abc"},
+                 {"--exit-after-ms"},
+                 {"--outputs"},
+                 {"--outputs", ""},
+                 {"--outputs", "DP-2,,DP-1"},
+                 {"--outputs", "DP-2,"},
+                 {"--report"},
+                 {"--outputs", "DP-2", "--outputs", "DP-1"},
+                 {"--exit-after-ms", "100", "--exit-after-ms", "200"},
+                 {"--report", "/a", "--report", "/b"},
+                 {"grab", "--output", "DP-2", "--out", "/x.png", "--outputs", "DP-2"},
+                 {"grab", "--output", "DP-2", "--out", "/x.png", "--exit-after-ms", "100"},
+             }) {
+            o = parseCli(bad);
+            QVERIFY2(o.command == Command::Error, qPrintable(bad.join(' ')));
+            QVERIFY2(!o.error.isEmpty(), qPrintable(bad.join(' ')));
+        }
     }
 };
 
