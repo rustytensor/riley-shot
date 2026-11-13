@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Every element set away from its default, in a different order from the schema's listing (xs:all allows it).
+     tst_config expects exactly these values back. -->
+<riley-shot xmlns="urn:riley-shot:config" version="1">
+  <pointer>true</pointer>
+  <colours>
+    <marker>#00ff7f</marker>
+    <pen>lavender</pen>
+    <highlighter>#FFEE00</highlighter>
+    <shape>teal</shape>
+    <text>text</text>
+  </colours>
+  <save-folder>~/Shots/riley test</save-folder>
+  <file-name>shot-%H%M%S-%%</file-name>
+  <copy-on-capture>false</copy-on-capture>
+  <save-on-capture>0</save-on-capture>
+</riley-shot>

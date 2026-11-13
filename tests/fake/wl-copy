@@ -1,0 +1,9 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+# A stand-in for wl-copy, so tests never touch the real clipboard. Writes its arguments, one per line, to
+# $FAKE_WLCOPY_DIR/args and its stdin to $FAKE_WLCOPY_DIR/stdin, then exits ${FAKE_WLCOPY_EXIT:-0}.
+dir=${FAKE_WLCOPY_DIR:?FAKE_WLCOPY_DIR is not set}
+: > "$dir/args"
+for a in "$@"; do printf '%s\n' "$a" >> "$dir/args"; done
+cat > "$dir/stdin"
+exit "${FAKE_WLCOPY_EXIT:-0}"

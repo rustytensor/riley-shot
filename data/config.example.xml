@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- riley-shot's config, with every element at its default. Copy it to ~/.config/riley-shot/config.xml and change
+     what you need; leave out what you do not. The format is data/config.xsd. -->
+<riley-shot xmlns="urn:riley-shot:config" version="1">
+  <save-folder>~/Pictures/Screenshots</save-folder>
+  <file-name>Screenshot_%Y-%m-%d_%H-%M-%S</file-name>
+  <copy-on-capture>true</copy-on-capture>
+  <save-on-capture>true</save-on-capture>
+  <pointer>false</pointer>
+  <colours>
+    <pen>red</pen>
+    <highlighter>yellow</highlighter>
+    <shape>red</shape>
+    <text>red</text>
+    <marker>accent</marker>
+  </colours>
+</riley-shot>

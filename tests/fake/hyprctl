@@ -1,0 +1,9 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+# A stand-in for hyprctl: "monitors -j" and "clients -j" print the test data; anything else fails.
+data=$(dirname "$0")/../data
+case "$*" in
+    "monitors -j") cat "$data/monitors.json" ;;
+    "clients -j") cat "$data/clients.json" ;;
+    *) echo "fake hyprctl: unsupported: $*" >&2; exit 1 ;;
+esac

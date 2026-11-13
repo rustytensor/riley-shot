@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# A stand-in for grim, for tst_grab. Accepts what riley-shot passes ([-c] -t ppm -o NAME -), appends one line
+# "<start-ms> <args...>" to $FAKE_GRIM_LOG, sleeps $FAKE_GRIM_DELAY seconds, then writes a binary PPM of the output's
+# device size in one uniform colour per output on stdout. With -c, pixel (0,0) is white (the "pointer").
+# $FAKE_GRIM_LOGICAL (comma list) makes those outputs come out at their logical size instead (a wrong grab);
+# $FAKE_GRIM_FAIL (comma list) makes those exit 1 with nothing on stdout.
+import os, sys, time
+# Device sizes of this desktop's outputs: the hyprctl mode, width/height swapped for HDMI-A-1 (transform 3).
+DEVICE = {"HDMI-A-1": (1440, 2560), "DP-1": (3440, 1440), "DP-3": (3440, 1440),
+          "DP-2": (2560, 1600), "HDMI-A-2": (2560, 1600)}
+# Logical sizes: device / scale (DP-2 1.25, HDMI-A-2 1.6; the others scale 1).
+LOGICAL = {"HDMI-A-1": (1440, 2560), "DP-1": (3440, 1440), "DP-3": (3440, 1440),
+           "DP-2": (2048, 1280), "HDMI-A-2": (1600, 1000)}
+COLOUR = {"HDMI-A-1": (11, 0, 0), "DP-1": (0, 22, 0), "DP-3": (0, 0, 33),
+          "DP-2": (44, 44, 0), "HDMI-A-2": (0, 55, 55)}
+args = sys.argv[1:]
+start = int(time.time() * 1000)
+log = os.environ.get("FAKE_GRIM_LOG")
+if log:
+    with open(log, "a") as f:
+        f.write("%d %s\n" % (start, " ".join(args)))
+if "-o" not in args or args.count("-") == 0 or args[-1] != "-":
+    sys.exit(2)
+name = args[args.index("-o") + 1]
+if name not in DEVICE:
+    sys.exit(3)
+time.sleep(float(os.environ.get("FAKE_GRIM_DELAY", "0")))
+if name in os.environ.get("FAKE_GRIM_FAIL", "").split(","):
+    sys.exit(1)
+w, h = (LOGICAL if name in os.environ.get("FAKE_GRIM_LOGICAL", "").split(",") else DEVICE)[name]
+pixels = bytearray(bytes(COLOUR[name]) * (w * h))
+if "-c" in args:
+    pixels[0:3] = b"\xff\xff\xff"
+out = sys.stdout.buffer
+out.write(b"P6\n%d %d\n255\n" % (w, h))
+out.write(pixels)
+out.flush()

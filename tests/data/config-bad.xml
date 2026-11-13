@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Well-formed but invalid in three ways: a "/" in the file name, a colour that is neither a theme key nor #rrggbb,
+     and "yes" for a boolean. xmllint must reject it and Config::load must fall back to the defaults with an error. -->
+<riley-shot xmlns="urn:riley-shot:config" version="1">
+  <file-name>shots/%Y</file-name>
+  <colours>
+    <pen>orange</pen>
+  </colours>
+  <pointer>yes</pointer>
+</riley-shot>

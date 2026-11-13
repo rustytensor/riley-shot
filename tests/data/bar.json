@@ -1,0 +1,17 @@
+{
+  "theme": "gate-test",
+  "base": "#010203",
+  "surface0": "#111213",
+  "surface1": "#212223",
+  "text": "#fefdfc",
+  "subtext": "#c0c1c2",
+  "accent": "#a1b2c3",
+  "mauve": "#808182",
+  "lavender": "#707172",
+  "teal": "#606162",
+  "peach": "#505152",
+  "green": "#404142",
+  "red": "#ff0001",
+  "yellow": "#fefe00",
+  "font": "Gate Test Mono"
+}

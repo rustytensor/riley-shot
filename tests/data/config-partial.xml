@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Only the pointer default changed; everything else must come back as the defaults. -->
+<riley-shot xmlns="urn:riley-shot:config" version="1">
+  <pointer>true</pointer>
+</riley-shot>

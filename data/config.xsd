@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!--
+  riley-shot's config: $XDG_CONFIG_HOME/riley-shot/config.xml (XDG_CONFIG_HOME defaults to ~/.config).
+  riley-shot carries this schema in its binary and validates the file against it every time it reads it. A file that
+  does not validate is not used at all: riley-shot runs on the defaults and says why on stderr.
+
+  Every element is optional and may come in any order; a missing element takes its default.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:c="urn:riley-shot:config"
+           targetNamespace="urn:riley-shot:config"
+           elementFormDefault="qualified">
+
+  <xs:element name="riley-shot">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="save-folder" type="c:folder" minOccurs="0"/>
+        <xs:element name="file-name" type="c:fileName" minOccurs="0"/>
+        <xs:element name="copy-on-capture" type="xs:boolean" minOccurs="0"/>
+        <xs:element name="save-on-capture" type="xs:boolean" minOccurs="0"/>
+        <xs:element name="pointer" type="xs:boolean" minOccurs="0"/>
+        <xs:element name="colours" type="c:colours" minOccurs="0"/>
+      </xs:all>
+      <xs:attribute name="version" use="required">
+        <xs:annotation>
+          <xs:documentation>The format version. This schema is version 1.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="1"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- SAVE-FOLDER: where shots are saved. A leading "~" means the home folder. One line, not only spaces.
+       Default ~/Pictures/Screenshots. -->
+  <xs:simpleType name="folder">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[^\r\n]*[^\s][^\r\n]*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- FILE-NAME: the file name pattern, without the extension (.png or .jpg is added). Tokens %Y %m %d %H %M %S
+       and %%. One line, no "/", not only spaces. Default Screenshot_%Y-%m-%d_%H-%M-%S. -->
+  <xs:simpleType name="fileName">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[^/\r\n]*[^/\s][^/\r\n]*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- COPY-ON-CAPTURE (default true), SAVE-ON-CAPTURE (default true), POINTER (default false): xs:boolean. -->
+
+  <!-- COLOURS: the editor's starting colour per tool. Defaults: pen red, highlighter yellow, shape red, text red,
+       marker accent. -->
+  <xs:complexType name="colours">
+    <xs:all>
+      <xs:element name="pen" type="c:colour" minOccurs="0"/>
+      <xs:element name="highlighter" type="c:colour" minOccurs="0"/>
+      <xs:element name="shape" type="c:colour" minOccurs="0"/>
+      <xs:element name="text" type="c:colour" minOccurs="0"/>
+      <xs:element name="marker" type="c:colour" minOccurs="0"/>
+    </xs:all>
+  </xs:complexType>
+
+  <!-- A colour: a Riley theme colour by name (from ~/.config/riley/bar.json), or #rrggbb. -->
+  <xs:simpleType name="colour">
+    <xs:union memberTypes="c:themeColour c:rgb"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="themeColour">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="base"/>
+      <xs:enumeration value="surface0"/>
+      <xs:enumeration value="surface1"/>
+      <xs:enumeration value="text"/>
+      <xs:enumeration value="subtext"/>
+      <xs:enumeration value="accent"/>
+      <xs:enumeration value="mauve"/>
+      <xs:enumeration value="lavender"/>
+      <xs:enumeration value="teal"/>
+      <xs:enumeration value="peach"/>
+      <xs:enumeration value="green"/>
+      <xs:enumeration value="red"/>
+      <xs:enumeration value="yellow"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="rgb">
+    <xs:restriction base="xs:token">
+      <xs:pattern value="#[0-9a-fA-F]{6}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>
