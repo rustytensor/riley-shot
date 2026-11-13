@@ -1,15 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// riley-shot: the command line (src/core/cli.h). M1 has the "grab" command through the capture core; the capture
-// modes come with the overlay in M2.
+// riley-shot: the command line (src/core/cli.h): "grab" through the capture core, and capture (the default) through
+// the overlay (session.h).
 #include "cli.h"
 #include "grab.h"
 #include "output.h"
+#include "session.h"
 
 #include <QCoreApplication>
+#include <QGuiApplication>
 #include <QImage>
 #include <QStringList>
+#include <QtQml/qqmlextensionplugin.h>
 
 #include <cstdio>
+
+// The RileyShot QML module is compiled into the binary.
+Q_IMPORT_QML_PLUGIN(RileyShotPlugin)
 
 using namespace rileyshot;
 
@@ -18,6 +24,7 @@ namespace {
 const char kUsage[] =
     "Usage:\n"
     "  riley-shot [capture] [--region | --screen | --window] [--no-editor]\n"
+    "             [--outputs NAME[,NAME...]] [--exit-after-ms N] [--report FILE]\n"
     "  riley-shot grab --output NAME --out FILE.png [--pointer]\n"
     "  riley-shot --help\n"
     "\n"
@@ -26,6 +33,14 @@ const char kUsage[] =
     "  --screen      go straight to picking a screen\n"
     "  --window      go straight to picking a window\n"
     "  --no-editor   copy and save only; do not open the editor\n"
+    "\n"
+    "  Test aids:\n"
+    "  --outputs NAME[,NAME...]  freeze and cover only these outputs\n"
+    "  --exit-after-ms N         give up after N ms (at most 10000), exit code 3\n"
+    "  --report FILE             append JSON lines about the surfaces to FILE\n"
+    "\n"
+    "  Exit codes for capture: 0 captured, 1 cancelled, 3 timer ran out, 4 failure; 2 for a bad command line.\n"
+    "\n"
     "  grab          write one output's device pixels to a PNG file\n"
     "  --pointer     include the pointer in the grab\n";
 
@@ -92,6 +107,8 @@ int main(int argc, char *argv[])
     case CliOptions::Command::Capture:
         break;
     }
-    say(QStringLiteral("the capture overlay is not built yet"));
-    return 1;
+    QGuiApplication app(argc, argv);
+    QGuiApplication::setApplicationName(QStringLiteral("riley-shot"));
+    QGuiApplication::setDesktopFileName(QStringLiteral("riley-shot"));
+    return runCapture(o);
 }

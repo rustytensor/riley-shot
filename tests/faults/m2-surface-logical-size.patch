@@ -1,0 +1,20 @@
+--- a/src/app/overlaysurface.cpp
++++ b/src/app/overlaysurface.cpp
+@@ -42,13 +42,15 @@
+     // The output's logical size; the compositor sizes an all-anchored layer to the output anyway.
+     m_view->resize(output.logicalSize());
+ 
++    // PLANTED FAULT (M2): a scaled output's surface is sized in logical instead of device pixels.
++    const QSize planted = output.scale != 1.0 ? output.logicalSize() : output.deviceSize();
+     m_view->setInitialProperties({
+         {QStringLiteral("controller"), QVariant::fromValue(controller)},
+         {QStringLiteral("outputName"), output.name},
+         {QStringLiteral("layoutX"), output.layoutPos.x()},
+         {QStringLiteral("layoutY"), output.layoutPos.y()},
+-        {QStringLiteral("deviceWidth"), output.deviceSize().width()},
+-        {QStringLiteral("deviceHeight"), output.deviceSize().height()},
++        {QStringLiteral("deviceWidth"), planted.width()},
++        {QStringLiteral("deviceHeight"), planted.height()},
+         {QStringLiteral("outputScale"), output.scale},
+     });
+     m_view->loadFromModule("RileyShot", "Overlay");
