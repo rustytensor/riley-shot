@@ -185,6 +185,18 @@ for helper in rileyshot-testpattern rileyshot-checkpattern; do
 done
 [ -x "$BIN" ] || live_ok=0
 
+# The live part holds the shared DP-2 lock (the same flock file and holder line as dp2-lock, which cannot wrap a
+# block of this script), from the test window to the grab; the build above and the offline check below never hold it.
+DP2_LOCK="/run/user/$(id -u)/dp2-test.lock"
+if [ $live_ok -eq 1 ]; then
+    exec 9> "$DP2_LOCK"
+    if ! flock -n 9; then
+        echo "     (waiting for the DP-2 lock: $(cat "$DP2_LOCK.holder" 2>/dev/null || echo 'another test'))"
+        flock 9
+    fi
+    printf '%s  pid %s  %s\n' "$(date '+%F %T')" "$$" "riley-shot tests/run-capture.sh (live part)" > "$DP2_LOCK.holder"
+fi
+
 if [ $live_ok -eq 1 ]; then
     "$BUILD/rileyshot-testpattern" --output DP-2 --close-after 8000 > "$SHOTS/pattern.out" 2> "$LOGS/pattern.err" &
     PATTERN=$!
@@ -222,6 +234,8 @@ if [ $live_ok -eq 1 ]; then
         kill "$PATTERN" 2>/dev/null
     fi
     wait "$PATTERN" 2>/dev/null
+    : > "$DP2_LOCK.holder"
+    exec 9>&-
     if [ -s "$SHOTS/dp2.png" ]; then
         QT_QPA_PLATFORM=offscreen "$BUILD/rileyshot-checkpattern" "$SHOTS/dp2.png" > "$LOGS/checkpattern.log" 2>&1
         rc=$?
