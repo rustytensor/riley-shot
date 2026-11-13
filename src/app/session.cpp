@@ -4,12 +4,14 @@
 #include "capturecontroller.h"
 #include "config.h"
 #include "deliver.h"
+#include "editorwindow.h"
 #include "grab.h"
 #include "output.h"
 #include "overlaysurface.h"
 #include "theme.h"
 #include "window.h"
 
+#include <QDir>
 #include <QEventLoop>
 #include <QFile>
 #include <QGuiApplication>
@@ -53,6 +55,9 @@ public:
         m_file.write("\n");
         m_file.flush();
     }
+
+    // Lets another writer (the editor) append to the same file after this.
+    void close() { m_file.close(); }
 
     int exit(int code)
     {
@@ -245,6 +250,21 @@ int runCapture(const CliOptions &options)
         say(controller.error());
     else if (!controller.savedPath().isEmpty())
         std::printf("%s\n", qPrintable(controller.savedPath()));
+    std::fflush(stdout);
+
+    // 6. The editor, on the captured image, once every overlay has gone. It writes the report's editor line and
+    // the single exit line itself.
+    if (result == int(CaptureController::Captured) && options.editor && !controller.result().isNull()) {
+        EditorOptions editor;
+        editor.config = config;
+        editor.theme = theme;
+        editor.copyCommand = copyCommandFromEnvironment();
+        editor.home = QDir::homePath();
+        editor.exitAfterMs = options.exitAfterMs;
+        editor.reportFile = options.reportFile;
+        report.close();
+        return runEditor(controller.result(), editor);
+    }
     return report.exit(result);
 }
 

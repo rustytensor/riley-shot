@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// riley-shot: the command line (src/core/cli.h): "grab" through the capture core, and capture (the default) through
-// the overlay (session.h).
+// riley-shot: the command line (src/core/cli.h): "grab" through the capture core, "edit" through the editor
+// (editorwindow.h), and capture (the default) through the overlay (session.h).
 #include "cli.h"
+#include "editorwindow.h"
 #include "grab.h"
 #include "output.h"
 #include "session.h"
@@ -26,6 +27,7 @@ const char kUsage[] =
     "  riley-shot [capture] [--region | --screen | --window] [--no-editor]\n"
     "             [--outputs NAME[,NAME...]] [--exit-after-ms N] [--report FILE]\n"
     "  riley-shot grab --output NAME --out FILE.png [--pointer]\n"
+    "  riley-shot edit FILE [--exit-after-ms N] [--report FILE]\n"
     "  riley-shot --help\n"
     "\n"
     "  capture       freeze every screen and show the capture bar (the default)\n"
@@ -42,7 +44,10 @@ const char kUsage[] =
     "  Exit codes for capture: 0 captured, 1 cancelled, 3 timer ran out, 4 failure; 2 for a bad command line.\n"
     "\n"
     "  grab          write one output's device pixels to a PNG file\n"
-    "  --pointer     include the pointer in the grab\n";
+    "  --pointer     include the pointer in the grab\n"
+    "\n"
+    "  edit FILE     open an image in the editor (exit 0 when closed, 3 when the timer ran out,\n"
+    "                4 when FILE cannot be read)\n";
 
 void say(const QString &line)
 {
@@ -105,10 +110,13 @@ int main(int argc, char *argv[])
         return grab(o);
     }
     case CliOptions::Command::Capture:
+    case CliOptions::Command::Edit:
         break;
     }
     QGuiApplication app(argc, argv);
     QGuiApplication::setApplicationName(QStringLiteral("riley-shot"));
     QGuiApplication::setDesktopFileName(QStringLiteral("riley-shot"));
+    if (o.command == CliOptions::Command::Edit)
+        return runEditFile(o);
     return runCapture(o);
 }

@@ -1,0 +1,12 @@
+--- a/src/editor/document.cpp
++++ b/src/editor/document.cpp
+@@ -817,7 +817,8 @@
+     d->drag = Private::None;
+     d->hasPending = false;
+     --d->index;
+-    d->cur = d->history[d->index];
++    // Planted fault (M3): undo restores the crop but keeps the annotations, so the last stroke stays.
++    d->cur.crop = d->history[d->index].crop;
+     d->stateChanged(this, cropBefore);
+ }
+ 
