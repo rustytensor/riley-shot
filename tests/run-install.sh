@@ -222,7 +222,9 @@ for g in run-capture run-overlay run-editor; do
         fail "$g.sh (no installed program to run it on)"
         continue
     fi
-    RILEYSHOT_BIN="$BIN" bash "$GATES/tests/$g.sh" > "$LOGS/$g.log" 2>&1
+    # Each gate in its own default build folder: none of this script's settings reach it, only RILEYSHOT_BIN.
+    env -u RILEYSHOT_BUILD_DIR -u RILEYSHOT_PREFIX -u RILEYSHOT_GATES_ROOT RILEYSHOT_BIN="$BIN" \
+        bash "$GATES/tests/$g.sh" > "$LOGS/$g.log" 2>&1
     rc=$?
     grep -q -x -F "     (riley-shot under test: $BIN)" "$LOGS/$g.log" \
         && pass "$g.sh tested $BIN" || fail "$g.sh did not test $BIN"
